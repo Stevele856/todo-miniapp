@@ -737,7 +737,87 @@ const [selectedStatus, setSelectedStatus] = useState(task.status || 'active');
 
 - Ẩn trang .env
 - Kéo thư mục .gitignore trong backend ra
-- git add.
+- git add . (Thêm tất cả các file vào chuẩn bị cho commit)
+- git commit -m "first commit"
+- Copy 3 dòng này
+    git remote add origin https://github.com/Stevele856/todo-miniapp.git
+    git branch -M main
+    git push -u origin main
+
+- Sau khi up lên github thì có 1 vấn đề là trong repo không có node_module, nhưng Render cần node_modules để chạy ứng dụng => thêm câu lệnh để hướng dẫn Render tự cài dependencies
+
+B1: Terminal gõ `npm init-y` lệnh này sẽ tạo ra một thự mục `package.json` đây là trang cho cả frontend và backend
+B2: Trong `package.json` thêm câu lệnh  để cài dependencies cho cả frontend và backend
+
+```js
+  "scripts": {
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend" 
+  },
+  /* thêm --prefix backend là để chạy npm install cho thư mục backend
+   thêm --prefix frontend là để chạy npm install cho thư mục frontend
+    => 2 câu lệnh này sẽ cài node_module cho frontend và backend (có thể test bằng cách xoá 2 thư mục node_modules trong fe và be rồi chạy npm run build để cài lại)
+    - Ngoài ra những code viết trong front-end chưa phải là phiên bản tối ưu nhất, lí do dùng vite để build là nó giúp build dự án react 1 cách tối ưu cho deployment nên thêm lệnh `npm run build --prefix frontend`.
+   */
+```
+
+- Chạy lại npm run build thì lúc này ngoài việc cài dependencies còn sẽ giúp build luôn react app => tự động taoh thư mục mới trong frontend là `dist`. Trong này chứa bản tối ưu của ứng dụng React của chúng ta
+
+- Hiện tại ứng dụng đang có FE và BE chạy ở 2 PORT khác nhau, thay vì để user truy cập 2 domain riêng biệt => gộp lại 1 domain duy nhất
+
+- Setup trong `server.js`
+
+```js
+// Thêm dựa trên thư mục hiện tại
+import path from 'path'
+
+const __dirname = path.resolve() // Lấy đường dẫn đến thư mục hiện tại bằng cách này là vì khi code đưa vào Render sẽ không biết nó nằm ở dâu trên server đó => đây là cách giúp nodeJS tự xác định vị trí mà nó đang chạy
+
+// Viết thêm 1 middleware để nói với backend là lấy code trong thư mục dist trong FE
+app.use(express.static(path.join(__dirname, "../frontend/dist")))
+
+/* path.join(): là để nối đường dẫn đến thư mục hiện tại => là thư mục dist
+express.static: yêu cầu Express lấy toàn bộ file tĩnh trong thư mục dist như HTML CSS JS và gửi cho người dùng khi họ truy cập
+*/
+
+```
+
+- Tiếp theo là viết 1 logic để khi người dùng truy cập vào bất kì đường dẫn nào mà BE không định nghĩa trước thì sẽ trả về index.html trong FE
+
+```js
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html")) // Với bất kỳ URL nào mà người dùng gõ vào trình duyệt, Backend sẽ luôn trả về index.html để React router ở FE lo phần điều hướng tiếp theo
+})
+```
+
+=> Nhưng mà phần code này chỉ nên chạy ở 'production' nên ở 'development' không cần nên sẽ bọc toàn bộ logic bên trong điều kiện if
+- Qua trang .env để thêm `NODE_ENV=production`
+
+- Tương tự với CORS đã đạo trước đó, chỉ cần dòng này chạy trên môi trường development thôi
+
+- Còn 1 việc nữa, khi Render chạy app họ cần biết lệnh để khởi động server, nên trong `package.json` ở thư mục gốc thêm vào script là:
+```js
+"start": "npm run start --prefix backend"
+```
+
+- Có thể test bằng gõ vào terminal npm run build (cày dependencies và build dự án react)
+- sau đó gõ npm run start => kiểm tra nếu đường link `localhost/5001` chạy thì thành công
+
+- Việc cuối cùng cần làm là vào `axios.js` hiện tại baseURL đang trỏ về localhost5001 nhưng khi deploy lên production sẽ có 1 URL khác, mình không biết chính xác render sẽ cho URL gì vì không trả phí nên cho cái nào thì dùng cái đó => không phải localhost nữa nên cần làm lich hoạt hơn
+
+```js
+//trong vite sẽ kiểm tra môi trường bằng cách
+const BASE_URL = import.meta.env.MODE === 'development' ? 'http://localhost:5001/api' : '/api'
+// nếu là môi trường development thì sẽ là 'http://localhost:5001/api' còn nếu là môi trường production thì sẽ là domain mà Render cung cấp kèm với '/api'
+```
+
+- Kiểm tra lần cuối trước khi commit
+    + package.json chung
+    + server.js
+
+- COMMIT thay đổi
++ git add .
++ git commit -m 'chuẩn bị deploy'
++ git push
     
 * Nhớ thuộc tính: `item-start`, `flex-1`
 
