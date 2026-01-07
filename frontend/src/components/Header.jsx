@@ -24,7 +24,7 @@ const Header = () => {
   return (
     <div className='text-center space-y-4'>
       <h1 className='text-4xl font-bold bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent'>
-        THUY'S TODO
+        TODO
       </h1>
 
       <p className='text-muted-foreground text-xl font-light'>{greeting}</p>
