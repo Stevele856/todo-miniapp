@@ -8,7 +8,7 @@ const Footer = ({completedTaskCount = 0, activeTaskCount = 0, pendingTaskCount =
           <p className='text-md text-muted-foreground'>
             {completedTaskCount > 0 && (
               <>
-                👏 Thuý đã hoàn thành {completedTaskCount} việc
+                👏 Bạn đã hoàn thành {completedTaskCount} việc
                 {activeTaskCount > 0 && (
                    <>, còn {activeTaskCount} việc nữa thôi. Cố lên!</>
                 )}
